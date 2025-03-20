@@ -1,29 +1,28 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from './user.entity';
 import * as bcrypt from 'bcryptjs';
+import { createUser, getUserByEmailOrPhone, User } from "./lib/db/instadb.client";
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
-  ) {}
+  ) { }
 
   async register(emailOrPhone: string, passcode: string, location: string, manualLocation: boolean): Promise<User> {
     const hashedPasscode = await bcrypt.hash(passcode, 10);
-    const user = this.userRepository.create({
+    const user = {
+      id: '',
       emailOrPhone,
       passcode: hashedPasscode,
       location,
       manualLocation,
-    });
-    return this.userRepository.save(user);
+    }
+
+    return await createUser(user);
   }
 
   async login(emailOrPhone: string, passcode: string): Promise<User | null> {
-    const user = await this.userRepository.findOne({ where: { emailOrPhone } });
+    const user = await this.findUserByEmailOrPhone(emailOrPhone);
+
     if (user && await bcrypt.compare(passcode, user.passcode)) {
       return user;
     }
@@ -31,6 +30,6 @@ export class UserService {
   }
 
   async findUserByEmailOrPhone(emailOrPhone: string): Promise<User | null> {
-    return this.userRepository.findOne({ where: { emailOrPhone } });
+    return await getUserByEmailOrPhone(emailOrPhone);
   }
 }

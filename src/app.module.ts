@@ -1,17 +1,14 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './user/user.entity';
 import { UserModule } from "./user/user.module";
+import { ConfigModule } from "@nestjs/config";
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'sqlite',
-      database: 'ringer.db',
-      entities: [User],
-      synchronize: true, // Auto-create database schema (for development only)
+    ConfigModule.forRoot({
+      isGlobal: true, // Makes the configuration available globally
     }),
     UserModule,
   ],
 })
-export class AppModule {}
+export class AppModule { }
