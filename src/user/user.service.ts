@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import * as bcrypt from 'bcryptjs';
+import * as crypto from 'crypto';
 import { createUser, getUserByEmailOrPhone, User } from "./lib/db/instadb.client";
 
 @Injectable()
@@ -8,7 +8,7 @@ export class UserService {
   ) { }
 
   async register(emailOrPhone: string, passcode: string, location: string, manualLocation: boolean): Promise<User> {
-    const hashedPasscode = await bcrypt.hash(passcode, 10);
+    const hashedPasscode = this.hashPasscode(passcode);
     const user = {
       id: '',
       emailOrPhone,
@@ -23,7 +23,7 @@ export class UserService {
   async login(emailOrPhone: string, passcode: string): Promise<User | null> {
     const user = await this.findUserByEmailOrPhone(emailOrPhone);
 
-    if (user && await bcrypt.compare(passcode, user.passcode)) {
+    if (user && this.comparePasscodes(passcode, user.passcode)) {
       return user;
     }
     return null;
@@ -31,5 +31,14 @@ export class UserService {
 
   async findUserByEmailOrPhone(emailOrPhone: string): Promise<User | null> {
     return await getUserByEmailOrPhone(emailOrPhone);
+  }
+
+  private hashPasscode(passcode: string): string {
+    return crypto.createHash('sha256').update(passcode).digest('hex');
+  }
+
+  private comparePasscodes(plainPasscode: string, hashedPasscode: string): boolean {
+    const hashedInput = this.hashPasscode(plainPasscode);
+    return hashedInput === hashedPasscode;
   }
 }
