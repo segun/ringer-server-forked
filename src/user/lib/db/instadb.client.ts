@@ -14,6 +14,7 @@ export const instaServer = init({
 })
 
 export type User = InstaQLEntity<SchemaType, 'user'>;
+export type ChargingStatus = InstaQLEntity<SchemaType, 'chargingStatus'>;
 
 export async function getUserById(id: string): Promise<User | null> {
     const userQueryResponse = await instaServer.query({
@@ -57,10 +58,39 @@ export async function userExists(emailOrPhone: string): Promise<boolean> {
 // insert into user
 export async function createUser(user: User) {
     user.id = id();
-    
+
     await instaServer.transact([
         tx.user[user.id].update(user)
     ]);
 
     return getUserById(user.id);
+}
+
+export async function getUserChargingStatuses(userId: string): Promise<ChargingStatus | null> {
+    const chargingStatusQueryResponse = await instaServer.query({
+        chargingStatus: {
+            $: {
+                where: {
+                    userId
+                }
+            },
+            user: {}
+        }
+    } as InstaQLParams<SchemaType>);
+
+    if (chargingStatusQueryResponse && chargingStatusQueryResponse.chargingStatus && chargingStatusQueryResponse.chargingStatus.length > 0) {
+        return chargingStatusQueryResponse.chargingStatus[0];
+    }
+    return null;
+}
+
+export async function addChargingStatus(chargingStatus: ChargingStatus) {
+    chargingStatus.id = id();
+
+    await instaServer.transact([
+        tx.chargingStatus[chargingStatus.id].update(chargingStatus),
+        tx.user[chargingStatus.userId].link({ chargingStatus: chargingStatus.id })
+    ]);
+
+    return chargingStatus;
 }

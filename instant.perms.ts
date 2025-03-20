@@ -15,7 +15,15 @@ const rules = {
       update: "false",
       delete: "false",
     },
-  }
+  },
+  chargingStatus: {
+    allow: {
+      view: "true",
+      create: "false",
+      update: "false",
+      delete: "false",
+    },
+  }  
   /**
    * Welcome to Instant's permission system!
    * Right now your rules are empty. To start filling them in, check out the docs:

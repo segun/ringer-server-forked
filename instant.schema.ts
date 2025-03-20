@@ -11,8 +11,29 @@ const _schema = i.schema({
       location: i.string(),
       manualLocation: i.boolean()
     }),
+    chargingStatus: i.entity({
+      id: i.string().unique().indexed(),
+      userId: i.string().indexed(),
+      isPluggedIn: i.boolean(),
+      userLocation: i.string(),
+      manualLocation: i.boolean(),
+      statusTime: i.number()
+    }),
   },
-  links: {},
+  links: {
+    userChargingStatus: {
+      forward: {
+        on: 'user',
+        has: 'many',
+        label: 'userChargingStatus',
+      },
+      reverse: {
+        on: 'chargingStatus',
+        has: 'one',
+        label: 'user',
+      }
+    }
+  },
   rooms: {},
 });
 

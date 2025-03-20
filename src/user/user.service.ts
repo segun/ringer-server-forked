@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
-import { createUser, getUserByEmailOrPhone, User } from "./lib/db/instadb.client";
+import { addChargingStatus, ChargingStatus, createUser, getUserByEmailOrPhone, User } from "./lib/db/instadb.client";
 
 @Injectable()
 export class UserService {
@@ -31,6 +31,18 @@ export class UserService {
 
   async findUserByEmailOrPhone(emailOrPhone: string): Promise<User | null> {
     return await getUserByEmailOrPhone(emailOrPhone);
+  }
+
+  async updateChargingStatus(userId: string, isPluggedIn: boolean, userLocation: string, manualLocation: boolean) {
+    // Update user's charging status
+    return await addChargingStatus({
+      id: '',
+      userId,
+      isPluggedIn,
+      userLocation,
+      manualLocation,
+      statusTime: Date.now()
+    } as ChargingStatus);
   }
 
   private hashPasscode(passcode: string): string {
